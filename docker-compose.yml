@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - ${EXPOSE_PORT}:${APP_PORT}
+      # - "40000:40000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    # security_opt:
+    #   - "seccomp:unconfined"
+    # cap_add:
+    #   - SYS_PTRACE
+    networks:
+      - books_app
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: "books_app"
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+    command: ["postgres", "-c", "log_statement=all"]
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./docker/container_data/pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - books_app
+
+networks:
+  books_app:
+    driver: bridge
